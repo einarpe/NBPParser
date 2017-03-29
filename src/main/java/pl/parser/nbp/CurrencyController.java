@@ -1,20 +1,22 @@
 package pl.parser.nbp;
 
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.NumberFormat;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.joda.time.DateTime;
 
-public class CurrencyInfo
+import pl.parser.nbp.data.ExchangeRatesTable;
+
+public class CurrencyController
 {
   private String currencyCode;
   
   private DateTime dateFrom;
   
   private DateTime dateTo;
+  
+  private CurrencyController() {}
   
   public String getCurrencyCode()
   {
@@ -46,11 +48,9 @@ public class CurrencyInfo
     this.dateTo = dateTo;
   }
   
-  private CurrencyInfo() {}
-  
-  public static CurrencyInfo create(String currencyCode, String dateFrom, String dateTo)
+  public static CurrencyController create(String currencyCode, String dateFrom, String dateTo)
   {
-    CurrencyInfo info = getInstance();
+    CurrencyController info = getInstance();
     info.setCurrencyCode(currencyCode);
     info.setDateFrom(new DateTime(dateFrom));
     info.setDateTo(new DateTime(dateTo));
@@ -58,29 +58,28 @@ public class CurrencyInfo
   }
 
   
-  public void print() throws InterruptedException, ExecutionException
+  public void print() throws Exception
   {
-    Future<CurrencyInfoData> await = collectData();
-    CurrencyInfoData data = await.get();
+    // retrieve remote data
+    ExchangeRatesTable table = DataRetriever.getInstance(this).getResult();
     
-    printHandler(data, getPrintStream());
-  }
-
-  protected Future<CurrencyInfoData> collectData()
-  {
-    return CurrencyInfoData.getData(this);
-  }
-
-  protected void printHandler(CurrencyInfoData data, PrintStream out)
-  {
-    NumberFormat formatter = getNumberFormatter();
-    out.println(formatter.format(data.getAverage()));
-    out.println(formatter.format(data.getStdDeviation()));
+    // and then calculate what we need
+    CurrencyStatistics stats = CurrencyStatistics.calculate(table);
+    
+    // results are printed into some output print stream
+    printHandler(stats, getPrintStream());
   }
   
-  protected static CurrencyInfo getInstance()
+  protected void printHandler(CurrencyStatistics stats, PrintStream out)
   {
-    return new CurrencyInfo();
+    NumberFormat formatter = getNumberFormatter();
+    out.println(formatter.format(stats.getAverage()));
+    out.println(formatter.format(stats.getStdDeviation()));
+  }
+  
+  protected static CurrencyController getInstance()
+  {
+    return new CurrencyController();
   }
   
   protected PrintStream getPrintStream()

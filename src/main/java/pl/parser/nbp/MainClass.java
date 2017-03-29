@@ -1,7 +1,7 @@
 package pl.parser.nbp;
 
-import org.apache.commons.validator.routines.DateValidator;
 import org.apache.commons.validator.routines.RegexValidator;
+import org.joda.time.DateTime;
 
 public class MainClass 
 {
@@ -15,7 +15,7 @@ public class MainClass
         String dateFrom = args[1];
         String dateTo = args[2];
         
-        CurrencyInfo ci = CurrencyInfo.create(currencyCode, dateFrom, dateTo);
+        CurrencyController ci = CurrencyController.create(currencyCode, dateFrom, dateTo);
         ci.print();
       }
     }
@@ -39,11 +39,11 @@ public class MainClass
       if (!currencyValidator.isValid(args[0]))
         throw new Exception("Wrong CURRENCY_CODE parameter");
       
-      if (!DateValidator.getInstance().isValid(args[1], "yyyy-MM-dd"))
-        throw new Exception("Wrong DATE_FROM parameter");
+      DateTime from = new DateTime(args[1]);
+      DateTime to = new DateTime(args[2]);
       
-      if (!DateValidator.getInstance().isValid(args[2], "yyyy-MM-dd"))
-        throw new Exception("Wrong DATE_TO parameter");
+      if (from.compareTo(to) > 0)
+        throw new Exception("Parameter DATE_FROM must be less than or equal than DATE_TO");
       
       return true;
     }

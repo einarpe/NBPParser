@@ -1,8 +1,8 @@
 package pl.parser.nbp;
 
-import java.util.concurrent.Future;
+import pl.parser.nbp.data.ExchangeRatesTable;
 
-public class CurrencyInfoData
+public class CurrencyStatistics
 {
   private double average;
   
@@ -28,10 +28,16 @@ public class CurrencyInfoData
     this.stdDeviation = stdDeviation;
   }
   
-  public static Future<CurrencyInfoData> getData(CurrencyInfo currencyInfo)
+  public static CurrencyStatistics calculate(ExchangeRatesTable table)
   {
-    
-    return null;
+    CurrencyStatistics result = new CurrencyStatistics();
+    result.calculateData(table);
+    return result;
+  }
+  
+  private void calculateData(ExchangeRatesTable table)
+  {
+    // TODO Auto-generated method stub
   }
   
 }
