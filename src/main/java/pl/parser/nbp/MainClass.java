@@ -1,7 +1,7 @@
 package pl.parser.nbp;
 
-import org.apache.commons.validator.routines.RegexValidator;
-import org.joda.time.DateTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainClass 
 {
@@ -9,7 +9,13 @@ public class MainClass
   {
     try
     {
-      if (validateArgs(args))
+      setLogger();
+      
+      if (args.length != 3)
+      {
+        printHelp();
+      }
+      else
       {
         String currencyCode = args[0];
         String dateFrom = args[1];
@@ -21,31 +27,7 @@ public class MainClass
     }
     catch (Exception ex)
     {
-      System.err.println(ex.getMessage());
-    }
-    
-  }
-  
-  private static boolean validateArgs(String[] args) throws Exception
-  {
-    if (args.length != 3)
-    {
-      printHelp();
-      return false;
-    }
-    else
-    {
-      RegexValidator currencyValidator = new RegexValidator("[a-z]+", false);
-      if (!currencyValidator.isValid(args[0]))
-        throw new Exception("Wrong CURRENCY_CODE parameter");
-      
-      DateTime from = new DateTime(args[1]);
-      DateTime to = new DateTime(args[2]);
-      
-      if (from.compareTo(to) > 0)
-        throw new Exception("Parameter DATE_FROM must be less than or equal than DATE_TO");
-      
-      return true;
+      Logger.getGlobal().severe(ex.getMessage());
     }
   }
 
@@ -53,4 +35,15 @@ public class MainClass
   {
     System.out.println("Usage: java pl.parser.nbp.MainClass [CURRENCY_CODE] [DATE_FROM:YYYY-MM-DD] [DATE_TO:YYYY-MM-DD]");
   }
+  
+  private static void setLogger()
+  {
+    Level logLevel = Level.SEVERE;
+    String newLogLevel = System.getProperty("log.level"); 
+    if (newLogLevel != null)
+      logLevel = Level.parse(System.getProperty("log.level"));
+    
+    Logger.getGlobal().setLevel(logLevel);
+  }
+  
 }

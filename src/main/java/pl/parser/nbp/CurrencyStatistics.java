@@ -1,5 +1,9 @@
 package pl.parser.nbp;
 
+import java.util.List;
+
+import org.apache.commons.math3.stat.StatUtils;
+
 import pl.parser.nbp.data.ExchangeRatesTable;
 
 public class CurrencyStatistics
@@ -28,16 +32,27 @@ public class CurrencyStatistics
     this.stdDeviation = stdDeviation;
   }
   
-  public static CurrencyStatistics calculate(ExchangeRatesTable table)
+  public static CurrencyStatistics calculate(List<ExchangeRatesTable> table)
   {
     CurrencyStatistics result = new CurrencyStatistics();
     result.calculateData(table);
     return result;
   }
   
-  private void calculateData(ExchangeRatesTable table)
+  private void calculateData(List<ExchangeRatesTable> table)
   {
-    // TODO Auto-generated method stub
+    double[] buyRates = table
+      .stream()
+      .map((ert) -> ert.getPosition().getBuyRate())
+      .mapToDouble(Double::doubleValue).toArray();
+    
+    double[] sellRates = table
+        .stream()
+        .map((ert) -> ert.getPosition().getSellRate())
+        .mapToDouble(Double::doubleValue).toArray();
+    
+    average = StatUtils.mean(buyRates);
+    stdDeviation = Math.sqrt(StatUtils.variance(sellRates, average));
   }
   
 }

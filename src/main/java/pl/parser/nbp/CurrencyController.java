@@ -2,7 +2,7 @@ package pl.parser.nbp;
 
 import java.io.PrintStream;
 import java.text.NumberFormat;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 import org.joda.time.DateTime;
 
@@ -16,7 +16,12 @@ public class CurrencyController
   
   private DateTime dateTo;
   
-  private CurrencyController() {}
+  protected CurrencyController() { }
+  
+  protected static CurrencyController getInstance()
+  {
+    return new CurrencyController();
+  }
   
   public String getCurrencyCode()
   {
@@ -48,20 +53,32 @@ public class CurrencyController
     this.dateTo = dateTo;
   }
   
-  public static CurrencyController create(String currencyCode, String dateFrom, String dateTo)
+  public static CurrencyController create(String currencyCode, String dateFrom, String dateTo) throws Exception
   {
-    CurrencyController info = getInstance();
+    if (currencyCode == null || currencyCode.trim().isEmpty())
+      throw new Exception("Currency code cannot be null or empty");
+    
+    if (dateFrom == null)
+      throw new Exception("Date from cannot be null");
+    
+    if (dateTo == null)
+      throw new Exception("Date to cannot be null");
+      
+    CurrencyController info = getInstance();  
     info.setCurrencyCode(currencyCode);
     info.setDateFrom(new DateTime(dateFrom));
     info.setDateTo(new DateTime(dateTo));
+    
+    if (info.getDateFrom().compareTo(info.getDateTo()) > 0)
+      throw new Exception("Date from must me less than or equal to date to.");
+    
     return info;
   }
-
   
   public void print() throws Exception
   {
     // retrieve remote data
-    ExchangeRatesTable table = DataRetriever.getInstance(this).getResult();
+    List<ExchangeRatesTable> table = DataRetriever.getInstance(this).getResult();
     
     // and then calculate what we need
     CurrencyStatistics stats = CurrencyStatistics.calculate(table);
@@ -73,13 +90,9 @@ public class CurrencyController
   protected void printHandler(CurrencyStatistics stats, PrintStream out)
   {
     NumberFormat formatter = getNumberFormatter();
+    out.println(getCurrencyCode());
     out.println(formatter.format(stats.getAverage()));
     out.println(formatter.format(stats.getStdDeviation()));
-  }
-  
-  protected static CurrencyController getInstance()
-  {
-    return new CurrencyController();
   }
   
   protected PrintStream getPrintStream()
@@ -89,6 +102,8 @@ public class CurrencyController
   
   protected NumberFormat getNumberFormatter()
   {
-    return NumberFormat.getNumberInstance(); 
+    NumberFormat nf = NumberFormat.getNumberInstance();
+    nf.setMaximumFractionDigits(4);
+    return nf;
   }
 }
