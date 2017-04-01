@@ -3,26 +3,32 @@ package pl.parser.nbp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import pl.parser.nbp.utils.Parameters;
+
 public class MainClass 
 {
+  /**
+   * Main entry point.
+   * @param args - arguments passed to program: <br>
+   *  [0] - currency code <br>
+   *  [1] - date from <br>
+   *  [2] - date to <br>
+   * 
+   */
   public static void main(String[] args)
   {
     try
     {
       setLogger();
       
-      if (args.length != 3)
+      if (Parameters.init(args))
       {
-        printHelp();
+        Parser ci = new Parser();
+        ci.handle();
       }
       else
       {
-        String currencyCode = args[0];
-        String dateFrom = args[1];
-        String dateTo = args[2];
-        
-        CurrencyController ci = CurrencyController.create(currencyCode, dateFrom, dateTo);
-        ci.print();
+        printHelp();
       }
     }
     catch (Exception ex)
@@ -30,20 +36,27 @@ public class MainClass
       Logger.getGlobal().severe(ex.getMessage());
     }
   }
-
-  private static void printHelp()
-  {
-    System.out.println("Usage: java pl.parser.nbp.MainClass [CURRENCY_CODE] [DATE_FROM:YYYY-MM-DD] [DATE_TO:YYYY-MM-DD]");
-  }
   
+  /**
+   * Set default logger. <br>
+   * Method sets default logging level of SEVERE.
+   * When there is VM argument in format -Dlog.level=... it sets level to value of that argument.
+   */
   private static void setLogger()
   {
     Level logLevel = Level.SEVERE;
     String newLogLevel = System.getProperty("log.level"); 
     if (newLogLevel != null)
-      logLevel = Level.parse(System.getProperty("log.level"));
+      logLevel = Level.parse(newLogLevel.toUpperCase());
     
     Logger.getGlobal().setLevel(logLevel);
   }
   
+  /**
+   * Just simple method to print help.
+   */
+  private static void printHelp()
+  {
+    System.out.println("Usage: java pl.parser.nbp.MainClass [CURRENCY_CODE] [DATE_FROM:YYYY-MM-DD] [DATE_TO:YYYY-MM-DD]");
+  }  
 }

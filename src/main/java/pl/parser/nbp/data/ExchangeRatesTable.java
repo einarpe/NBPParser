@@ -1,7 +1,5 @@
 package pl.parser.nbp.data;
 
-import java.util.logging.Logger;
-
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
@@ -36,53 +34,53 @@ public class ExchangeRatesTable
     this.position = position;
   }
   
-  public static ExchangeRatesTable fromXml(Document document, String currencyCode)
+  /**
+   * Method for parsing XML document. <br>
+   * In single document there data of lots of currencies, method extracts data of only one currency.
+   * @param document - input document
+   * @param currencyCode - currency code, for which we want the data
+   * @return object of ExchangeRatesTable class
+   * @throws Exception - error reading data or there are no data of given currency code in document
+   */
+  public static ExchangeRatesTable fromXmlByCurrencyCode(Document document, String currencyCode) throws Exception
   {
-    try
+    /*
+    <numer_tabeli>73/C/NBP/2007</numer_tabeli>
+    <data_notowania>2007-04-12</data_notowania>
+    <data_publikacji>2007-04-13</data_publikacji>
+    <pozycja>
+      <nazwa_waluty>dolar amerykański</nazwa_waluty>
+      <przelicznik>1</przelicznik>
+      <kod_waluty>USD</kod_waluty>
+      <kurs_kupna>2,8210</kurs_kupna>
+      <kurs_sprzedazy>2,8780</kurs_sprzedazy>
+    </pozycja>
+    */ 
+    
+    ExchangeRatesTable table = new ExchangeRatesTable();
+    XPath xpath = XPathFactory.newInstance().newXPath();
+    
+    String pubDate = (String) xpath.evaluate("//data_publikacji/text()", document, XPathConstants.STRING);
+    table.setPublicationDate(new DateTime(pubDate));
+    
+    Element xmlCurrencyCode = (Element) xpath.evaluate(String.format("//pozycja/kod_waluty[text()='%s']", currencyCode), document, XPathConstants.NODE);
+    if (xmlCurrencyCode != null)
     {
-      /*
-      <numer_tabeli>73/C/NBP/2007</numer_tabeli>
-      <data_notowania>2007-04-12</data_notowania>
-      <data_publikacji>2007-04-13</data_publikacji>
-      <pozycja>
-        <nazwa_waluty>dolar amerykański</nazwa_waluty>
-        <przelicznik>1</przelicznik>
-        <kod_waluty>USD</kod_waluty>
-        <kurs_kupna>2,8210</kurs_kupna>
-        <kurs_sprzedazy>2,8780</kurs_sprzedazy>
-      </pozycja>
-      */ 
+      Position position = new Position();
+      Element xmlPosition = (Element) xmlCurrencyCode.getParentNode();
       
-      ExchangeRatesTable table = new ExchangeRatesTable();
-      XPath xpath = XPathFactory.newInstance().newXPath();
+      String posBuyRate =  (String) xpath.evaluate("kurs_kupna/text()", xmlPosition, XPathConstants.STRING);
+      position.setBuyRate(Double.parseDouble(posBuyRate.replace(',', '.')));
       
-      String pubDate = (String) xpath.evaluate("//data_publikacji/text()", document, XPathConstants.STRING);
-      table.setPublicationDate(new DateTime(pubDate));
+      String posSellRate = (String) xpath.evaluate("kurs_sprzedazy/text()", xmlPosition, XPathConstants.STRING);
+      position.setSellRate(Double.parseDouble(posSellRate.replace(',', '.')));
       
-      Element xmlCurrencyCode = (Element) xpath.evaluate(String.format("//pozycja/kod_waluty[text()='%s']", currencyCode), document, XPathConstants.NODE);
-      if (xmlCurrencyCode != null)
-      {
-        Position position = new Position();
-        Element xmlPosition = (Element) xmlCurrencyCode.getParentNode();
-        
-        String posBuyRate =  (String) xpath.evaluate("kurs_kupna/text()", xmlPosition, XPathConstants.STRING);
-        position.setBuyRate(Double.parseDouble(posBuyRate.replace(',', '.')));
-        
-        String posSellRate = (String) xpath.evaluate("kurs_sprzedazy/text()", xmlPosition, XPathConstants.STRING);
-        position.setSellRate(Double.parseDouble(posSellRate.replace(',', '.')));
-        
-        table.setPosition(position);
-      }
-      else
-        throw new Exception("Element 'kod_waluty' with given currency code was not found");
-      
-      return table;
+      table.setPosition(position);
     }
-    catch (Exception ex)
-    {
-      Logger.getGlobal().severe(ex.getMessage());
-      return null;
-    }
+    else
+      throw new Exception("Element 'kod_waluty' with given currency code was not found");
+   
+    return table;
   }
   
 }

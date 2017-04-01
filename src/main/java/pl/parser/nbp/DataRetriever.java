@@ -1,8 +1,8 @@
 package pl.parser.nbp;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -16,43 +16,54 @@ import org.w3c.dom.Document;
 
 import pl.parser.nbp.data.ExchangeRatesTable;
 import pl.parser.nbp.utils.DownloadUtils;
+import pl.parser.nbp.utils.Parameters;
 
 public class DataRetriever
 {
-  private List<ExchangeRatesTable> tables;
-
-  private CurrencyController ctrl;
-  
+  /** Factory for building XML documents. */
   final static DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance(); 
   
+  /** Pattern to check for correct file and extracting date parts (year, month, and day). */
   final static Pattern reXmlFileName = Pattern.compile("c[0-9]{3}z([0-9]{2})([0-9]{2})([0-9]{2})");
 
-  private DataRetriever(CurrencyController ctrl) 
+  /** List of tables containing data. */
+  private List<ExchangeRatesTable> tables;
+  
+  private DataRetriever() 
   { 
-    this.ctrl = ctrl;
-    this.tables = new LinkedList<ExchangeRatesTable>();
+    this.tables = new CopyOnWriteArrayList<>();
   }
   
-  public static DataRetriever getInstance(CurrencyController ctrl) throws Exception
+  /**
+   * Returns instance of DataRetriever class. <br>
+   * Method starts downloading immediately.
+   * @return
+   * @throws Exception - error during download
+   */
+  public static DataRetriever getInstance() throws Exception
   {
-    DataRetriever retriever = new DataRetriever(ctrl);
+    DataRetriever retriever = new DataRetriever();
     retriever.downloadData();
     return retriever;
   }
   
+  /** Method to handle download data. */
   private void downloadData() throws IOException, InterruptedException
   {
-    DateTime dateFrom = ctrl.getDateFrom();
-    DateTime dateTo = ctrl.getDateTo();
+    Parameters params = Parameters.getInstance();
+    DateTime dateFrom = params.getDateFrom();
+    DateTime dateTo = params.getDateTo();
     ForkJoinPool fjp = new ForkJoinPool(8); 
     
     Logger.getGlobal().info("Starting download.");
     for (int year = dateFrom.getYear(), to = dateTo.getYear(); year <= to; year++)
     {
+      // These files are index files - contains list of all files with all data we need.
       String indexFileUrl = String.format("http://www.nbp.pl/kursy/xml/dir%d.txt", year);
       String indexContents = DownloadUtils.download(indexFileUrl);
       for (String line : indexContents.split("[\r\n]+"))
       {
+        // look for files with currency buy & sell rates
         Matcher m = reXmlFileName.matcher(line);
         if (!m.matches())
           continue;
@@ -65,7 +76,7 @@ public class DataRetriever
         if (dateInFileName.compareTo(dateFrom) >= 0 && dateInFileName.compareTo(dateTo) <= 0)
         {
           String dataFileUrl = String.format("http://www.nbp.pl/kursy/xml/%s.xml", line);
-          fjp.submit(() -> addDataFile(dataFileUrl));
+          fjp.submit(() -> readDataFile(dataFileUrl));
         }
       }
     }
@@ -73,33 +84,35 @@ public class DataRetriever
     Logger.getGlobal().info("Downloading done.");
   }
   
-  private void addDataFile(String url)
+  /** 
+   * Given URL, read XML file and parse it into ExchangeRatesTable class. 
+   * Methods adds ready object into resulting list. 
+   */
+  private void readDataFile(String url)
   {
     try
     {
-      Logger.getGlobal().info("Downloading file " + url);
+      Parameters params = Parameters.getInstance();
+      Logger.getGlobal().info(String.format("Downloading file %s", url));
       
       Document document = builderFactory.newDocumentBuilder().parse(url);
-      ExchangeRatesTable table = ExchangeRatesTable.fromXml(document, ctrl.getCurrencyCode());
-      if (table == null)
-        return;
+      ExchangeRatesTable table = ExchangeRatesTable.fromXmlByCurrencyCode(document, params.getCurrencyCode());
       
-      // check again publication date  
+      // check again publication date, just to be sure
       DateTime publicationDate = table.getPublicationDate();
-      if (publicationDate.compareTo(ctrl.getDateFrom()) >= 0 && publicationDate.compareTo(ctrl.getDateTo()) <= 0)
-      {
-        synchronized (tables)
-        {
-          tables.add(table);
-        }
-      }
+      if (publicationDate.compareTo(params.getDateFrom()) >= 0 && publicationDate.compareTo(params.getDateTo()) <= 0)
+        tables.add(table);
     }
     catch (Exception ex)
     {
       Logger.getGlobal().severe(ex.getMessage());
     }
   }
-
+  
+  /**
+   * Gets resulting list after download.
+   * @return
+   */
   public List<ExchangeRatesTable> getResult()
   {
     return tables;
