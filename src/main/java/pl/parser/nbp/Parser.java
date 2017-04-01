@@ -9,6 +9,9 @@ import pl.parser.nbp.utils.Parameters;
 
 public class Parser
 {
+  private PrintStream out;
+  
+  
   /**
    * Handle the situation. <br>
    * Method downloads data and calculates stats.
@@ -16,7 +19,7 @@ public class Parser
    */
   public void handle() throws Exception
   {
-    // retrieve remote data
+    // retrieve remote data and wait...
     List<ExchangeRatesTable> table = getTable();
     
     // and then calculate what we need
@@ -39,12 +42,22 @@ public class Parser
   protected void printHandler(CurrencyStatistics stats)
   {
     NumberFormat formatter = getNumberFormatter();
-    PrintStream out = getPrintStream();
     Parameters params = Parameters.getInstance();
     
-    out.println(params.getCurrencyCode());
-    out.println(formatter.format(stats.getAverage()));
-    out.println(formatter.format(stats.getStdDeviation()));
+    println(params.getCurrencyCode());
+    println(formatter.format(stats.getAverage()));
+    println(formatter.format(stats.getStdDeviation()));
+  }
+  
+  /** Print some object to print stream. Add new line at the end. */
+  protected void println(Object ob)
+  {
+    // create single instance of output stream
+    if (out == null)
+      out = getPrintStream();
+    
+    out.println(ob);
+    out.flush();
   }
   
   /**

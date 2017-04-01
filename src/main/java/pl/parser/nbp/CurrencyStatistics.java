@@ -13,7 +13,7 @@ public class CurrencyStatistics
   private double stdDeviation;
   
   /**
-   * Gets average of buy rates.
+   * Gets average of bid rates.
    * @return
    */
   public double getAverage()
@@ -27,7 +27,7 @@ public class CurrencyStatistics
   }
 
   /**
-   * Gets standard deviation of sell rates.
+   * Gets standard deviation of ask rates.
    * @return
    */
   public double getStdDeviation()
@@ -55,21 +55,22 @@ public class CurrencyStatistics
   /** Method to calculate data based on input table. */
   private void calculateData(List<ExchangeRatesTable> table)
   {
-    double[] buyRates = table
+    double[] bidRates = table
       .stream()
       .map((ert) -> ert.getPosition().getBidRate())
-      .mapToDouble(Double::doubleValue).toArray();
+      .mapToDouble(Double::doubleValue)
+      .toArray();
     
-    double[] sellRates = table
+    double[] askRates = table
         .stream()
         .map((ert) -> ert.getPosition().getAskRate())
-        .mapToDouble(Double::doubleValue).toArray();
+        .mapToDouble(Double::doubleValue)
+        .toArray();
     
-    double mean = StatUtils.mean(buyRates);
+    double mean = StatUtils.mean(bidRates);
     setAverage(mean);
     
-    double stdDev = Math.sqrt(StatUtils.variance(sellRates, average));
+    double stdDev = Math.sqrt(StatUtils.variance(askRates, average));
     setStdDeviation(stdDev);
   }
-  
 }
