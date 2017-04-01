@@ -8,6 +8,12 @@ import org.apache.commons.io.IOUtils;
 
 public class DownloadUtils
 {
+  /**
+   * Simple method for synchronically downloading files.
+   * @param strUrl - location of file to download
+   * @return contents of downloaded file
+   * @throws IOException - error during download
+   */
   public static String download(String strUrl) throws IOException
   {
     URL url = new URL(strUrl);

@@ -42,8 +42,8 @@ public class Parser
   }
   
   /**
-   * Gets output stream to print results onto.
-   * @return
+   * Gets default output stream to print results onto. <br>
+   * @return System.out stream by default
    */
   protected PrintStream getPrintStream()
   {

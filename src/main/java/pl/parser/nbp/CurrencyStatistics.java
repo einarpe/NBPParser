@@ -12,26 +12,39 @@ public class CurrencyStatistics
   
   private double stdDeviation;
   
+  /**
+   * Gets average of buy rates.
+   * @return
+   */
   public double getAverage()
   {
     return average;
   }
 
-  public void setAverage(double average)
+  private void setAverage(double average)
   {
     this.average = average;
   }
 
+  /**
+   * Gets standard deviation of sell rates.
+   * @return
+   */
   public double getStdDeviation()
   {
     return stdDeviation;
   }
 
-  public void setStdDeviation(double stdDeviation)
+  private void setStdDeviation(double stdDeviation)
   {
     this.stdDeviation = stdDeviation;
   }
   
+  /**
+   * Performs calculations over ready list of buy & sell rates.
+   * @param table - input table with data
+   * @return object of CurrencyStatitics class with calculated data
+   */
   public static CurrencyStatistics calculate(List<ExchangeRatesTable> table)
   {
     CurrencyStatistics result = new CurrencyStatistics();
@@ -39,6 +52,7 @@ public class CurrencyStatistics
     return result;
   }
   
+  /** Method to calculate data based on input table. */
   private void calculateData(List<ExchangeRatesTable> table)
   {
     double[] buyRates = table
@@ -51,8 +65,11 @@ public class CurrencyStatistics
         .map((ert) -> ert.getPosition().getSellRate())
         .mapToDouble(Double::doubleValue).toArray();
     
-    average = StatUtils.mean(buyRates);
-    stdDeviation = Math.sqrt(StatUtils.variance(sellRates, average));
+    double mean = StatUtils.mean(buyRates);
+    setAverage(mean);
+    
+    double stdDev = Math.sqrt(StatUtils.variance(sellRates, average));
+    setStdDeviation(stdDev);
   }
   
 }

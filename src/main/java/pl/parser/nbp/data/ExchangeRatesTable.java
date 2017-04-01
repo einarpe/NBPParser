@@ -35,14 +35,14 @@ public class ExchangeRatesTable
   }
   
   /**
-   * Method for parsing XML document. <br>
-   * In single document there data of lots of currencies, method extracts data of only one currency.
-   * @param document - input document
+   * Method to parse XML document. <br>
+   * In single document there data of lots of currencies. This method extracts data of only one given currency.
+   * @param document - input XML document
    * @param currencyCode - currency code, for which we want the data
    * @return object of ExchangeRatesTable class
    * @throws Exception - error reading data or there are no data of given currency code in document
    */
-  public static ExchangeRatesTable fromXmlByCurrencyCode(Document document, String currencyCode) throws Exception
+  public static ExchangeRatesTable parse(Document document, String currencyCode) throws Exception
   {
     /*
     <numer_tabeli>73/C/NBP/2007</numer_tabeli>

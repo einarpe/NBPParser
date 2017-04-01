@@ -21,10 +21,13 @@ import pl.parser.nbp.utils.Parameters;
 public class DataRetriever
 {
   /** Factory for building XML documents. */
-  final static DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance(); 
+  private final static DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance(); 
   
   /** Pattern to check for correct file and extracting date parts (year, month, and day). */
-  final static Pattern reXmlFileName = Pattern.compile("c[0-9]{3}z([0-9]{2})([0-9]{2})([0-9]{2})");
+  private final static Pattern reXmlFileName = Pattern.compile("c[0-9]{3}z([0-9]{2})([0-9]{2})([0-9]{2})");
+
+  /** Specifies maximum waiting time to finish all downloads [minutes]. */
+  private final static long WAIT_TIMEOUT_MINUTES = 0;
 
   /** List of tables containing data. */
   private List<ExchangeRatesTable> tables;
@@ -36,8 +39,8 @@ public class DataRetriever
   
   /**
    * Returns instance of DataRetriever class. <br>
-   * Method starts downloading immediately.
-   * @return
+   * Method starts downloading immediately and blocks current thread until download is ready.
+   * @return object of DataRetriever class with downloaded and parsed data
    * @throws Exception - error during download
    */
   public static DataRetriever getInstance() throws Exception
@@ -80,7 +83,9 @@ public class DataRetriever
         }
       }
     }
-    fjp.awaitQuiescence(2, TimeUnit.MINUTES);
+    
+    // wait...
+    fjp.awaitQuiescence(WAIT_TIMEOUT_MINUTES, TimeUnit.MINUTES);
     Logger.getGlobal().info("Downloading done.");
   }
   
@@ -96,7 +101,7 @@ public class DataRetriever
       Logger.getGlobal().info(String.format("Downloading file %s", url));
       
       Document document = builderFactory.newDocumentBuilder().parse(url);
-      ExchangeRatesTable table = ExchangeRatesTable.fromXmlByCurrencyCode(document, params.getCurrencyCode());
+      ExchangeRatesTable table = ExchangeRatesTable.parse(document, params.getCurrencyCode());
       
       // check again publication date, just to be sure
       DateTime publicationDate = table.getPublicationDate();
@@ -117,5 +122,4 @@ public class DataRetriever
   {
     return tables;
   }
-  
 }
