@@ -41,7 +41,7 @@ public class CurrencyStatistics
   }
   
   /**
-   * Performs calculations over ready list of buy & sell rates.
+   * Performs calculations over ready list of bid & ask rates.
    * @param table - input table with data
    * @return object of CurrencyStatitics class with calculated data
    */
@@ -52,7 +52,7 @@ public class CurrencyStatistics
     return result;
   }
   
-  /** Method to calculate data based on input table. */
+  /** Method to calculate statistics based on input table data. */
   private void calculateData(List<ExchangeRatesTable> table)
   {
     double[] bidRates = table

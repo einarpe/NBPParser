@@ -36,7 +36,7 @@ public class DataRetriever
   
   /**
    * Returns instance of DataRetriever class. <br>
-   * Method starts downloading immediately and blocks current thread until download is ready.
+   * Method starts downloading immediately and blocks current thread until all data is downloaded.
    * @return object of DataRetriever class with downloaded and parsed data
    * @throws Exception - error during download
    */

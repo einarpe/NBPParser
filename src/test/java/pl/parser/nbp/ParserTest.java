@@ -13,7 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import pl.parser.nbp.utils.Parameters;
+import pl.parser.nbp.utils.Parameters.ParametersException;
 
 public class ParserTest
 {
@@ -48,16 +48,15 @@ public class ParserTest
   
   @Test
   /**
-   * Example how to use Parser class to produce CSV files.
+   * Just an example how to use Parser class to produce CSV files.
    * @throws Exception
    */
   public void exportToCSVTest() throws Exception
   {
-    final String CSV_HEADER = "Average;Standard deviation\r\n";
+    final String CSV_HEADER = "Avg;StdDev\r\n";
     final File tmpFile = File.createTempFile("nbpparser", ".csv");
     
-    Assert.assertTrue(Parameters.init(arr("CHF", "2014-05-02", "2014-09-14")));
-    Parser p = new Parser()
+    Parser p = new Parser(arr("CHF", "2014-05-02", "2014-06-01"))
     {
       @Override
       protected PrintStream getPrintStream()
@@ -78,8 +77,9 @@ public class ParserTest
       {
         NumberFormat nf = getNumberFormatter();
         println(CSV_HEADER);
-        println(nf.format(stats.getAverage()));
-        println(nf.format(stats.getStdDeviation()));
+        String nextLine = String.format("%s;%s", 
+            nf.format(stats.getAverage()), nf.format(stats.getStdDeviation()));
+        println(nextLine);
       }
       
     };
@@ -90,12 +90,12 @@ public class ParserTest
     Assert.assertTrue(contents.startsWith(CSV_HEADER));
   }
   
+  /** Creates MockParser useful for testing purposes. */
   private Parser getParser(String code, String dateFrom, String dateTo, Consumer<CurrencyStatistics> handler) 
   {
     try
     {
-      Assert.assertTrue(Parameters.init(arr(code, dateFrom, dateTo))); 
-      return new MockParser(handler);
+      return new MockParser(handler, arr(code, dateFrom, dateTo));
     }
     catch (Exception ex)
     {
@@ -108,8 +108,9 @@ public class ParserTest
   {
     private final Consumer<CurrencyStatistics> handler;
 
-    public MockParser(Consumer<CurrencyStatistics> handler)
+    public MockParser(Consumer<CurrencyStatistics> handler, String[] args) throws ParametersException
     {
+      super(args);
       this.handler = handler;
     }
     

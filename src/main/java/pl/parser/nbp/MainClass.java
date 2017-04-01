@@ -3,17 +3,15 @@ package pl.parser.nbp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import pl.parser.nbp.utils.Parameters;
-
 public class MainClass 
 {
   /**
    * Main entry point.
-   * @param args - arguments passed to program: <br>
+   * @param args - arguments passed to program. Correct order and meaning: <br>
    *  [0] - currency code <br>
    *  [1] - start date<br>
    *  [2] - end date <br>
-   * 
+   * When no arguments are given, simple help is printed.
    */
   public static void main(String[] args)
   {
@@ -21,9 +19,9 @@ public class MainClass
     {
       setLogger();
       
-      if (Parameters.init(args))
+      if (args.length == 3)
       {
-        Parser parser = new Parser();
+        Parser parser = new Parser(args);
         parser.handle();
       }
       else
@@ -38,8 +36,8 @@ public class MainClass
   }
   
   /**
-   * Set default logger. <br>
-   * Method sets default logging level of SEVERE.
+   * Set default logger. 
+   * Method sets default logging level of SEVERE. <br>
    * When there is a VM argument in format -Dlog.level=... it sets level to value of that argument.
    */
   private static void setLogger()

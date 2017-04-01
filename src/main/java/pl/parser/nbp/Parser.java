@@ -6,11 +6,16 @@ import java.util.List;
 
 import pl.parser.nbp.data.ExchangeRatesTable;
 import pl.parser.nbp.utils.Parameters;
+import pl.parser.nbp.utils.Parameters.ParametersException;
 
 public class Parser
 {
   private PrintStream out;
   
+  public Parser(String[] args) throws ParametersException
+  {
+    Parameters.init(args);
+  }
   
   /**
    * Handle the situation. <br>
@@ -22,10 +27,10 @@ public class Parser
     // retrieve remote data and wait...
     List<ExchangeRatesTable> table = getTable();
     
-    // and then calculate what we need
+    // and then calculate what we need...
     CurrencyStatistics stats = CurrencyStatistics.calculate(table);
     
-    // results are printed into some output print stream
+    // finally, we can print results into some output print stream
     printHandler(stats);
   }
   

@@ -15,6 +15,8 @@ public class Parameters
   
   private DateTime endDate;
   
+  private Parameters() { }
+  
   /**
    * Gets currency code.
    * @return
@@ -65,6 +67,9 @@ public class Parameters
    */
   public static boolean init(String[] args) throws ParametersException
   {
+    /*
+     * Perform some validation beforehand.
+     */
     if (args == null || args.length != 3)
       return false;
     
@@ -76,14 +81,14 @@ public class Parameters
     
     if (args[2] == null)
       throw new ParametersException("End date cannot be null");
-      
-    if (instance == null)
-      instance = new Parameters();
     
+    // always create new instance of class when initializing
+    instance = new Parameters();
     instance.setCurrencyCode(args[0]);
     instance.setStartDate(new DateTime(args[1]));
     instance.setEndDate(new DateTime(args[2]));
     
+    // check correct date ranges
     if (instance.getStartDate().compareTo(instance.getEndDate()) > 0)
       throw new ParametersException("Start date must be less than or equal to end date.");
     
@@ -91,7 +96,7 @@ public class Parameters
   }
   
   /**
-   * Returns singleton instance.
+   * Returns current instance.
    * @return
    */
   public static Parameters getInstance()
