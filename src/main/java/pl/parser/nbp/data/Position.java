@@ -2,27 +2,35 @@ package pl.parser.nbp.data;
 
 public class Position
 {
-  private double buyRate;
+  private double bidRate;
   
-  private double sellRate;
+  private double askRate;
 
-  public double getBuyRate()
+  /** 
+   * Gets bid rate.
+   * @return
+   */
+  public double getBidRate()
   {
-    return buyRate;
+    return bidRate;
   }
 
-  public void setBuyRate(double buyRate)
+  public void setBidRate(double buyRate)
   {
-    this.buyRate = buyRate;
+    this.bidRate = buyRate;
+  }
+  
+  /**
+   * Gets ask rate.
+   * @return
+   */
+  public double getAskRate()
+  {
+    return askRate;
   }
 
-  public double getSellRate()
+  public void setAskRate(double sellRate)
   {
-    return sellRate;
-  }
-
-  public void setSellRate(double sellRate)
-  {
-    this.sellRate = sellRate;
+    this.askRate = sellRate;
   }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +29,8 @@ public class DataRetriever
 
   /** Specifies maximum waiting time to finish all downloads [minutes]. */
   private final static long WAIT_TIMEOUT_MINUTES = 0;
+  
+  ReentrantLock lock = new ReentrantLock();
 
   /** List of tables containing data. */
   private List<ExchangeRatesTable> tables;
@@ -54,12 +57,12 @@ public class DataRetriever
   private void downloadData() throws IOException, InterruptedException
   {
     Parameters params = Parameters.getInstance();
-    DateTime dateFrom = params.getDateFrom();
-    DateTime dateTo = params.getDateTo();
+    DateTime startDate = params.getStartDate();
+    DateTime endDate = params.getEndDate();
     ForkJoinPool fjp = new ForkJoinPool(8); 
     
     Logger.getGlobal().info("Starting download.");
-    for (int year = dateFrom.getYear(), to = dateTo.getYear(); year <= to; year++)
+    for (int year = startDate.getYear(), to = endDate.getYear(); year <= to; year++)
     {
       // These files are index files - contains list of all files with all data we need.
       String indexFileUrl = String.format("http://www.nbp.pl/kursy/xml/dir%d.txt", year);
@@ -76,7 +79,7 @@ public class DataRetriever
         int fnDay = Integer.parseInt(m.group(3));
         DateTime dateInFileName = new DateTime(fnYear, fnMonth, fnDay, 0, 0);
         
-        if (dateInFileName.compareTo(dateFrom) >= 0 && dateInFileName.compareTo(dateTo) <= 0)
+        if (dateInFileName.compareTo(startDate) >= 0 && dateInFileName.compareTo(endDate) <= 0)
         {
           String dataFileUrl = String.format("http://www.nbp.pl/kursy/xml/%s.xml", line);
           fjp.submit(() -> readDataFile(dataFileUrl));
@@ -85,7 +88,7 @@ public class DataRetriever
     }
     
     // wait...
-    fjp.awaitQuiescence(WAIT_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+    fjp.awaitQuiescence(1, TimeUnit.MINUTES);
     Logger.getGlobal().info("Downloading done.");
   }
   
@@ -105,8 +108,13 @@ public class DataRetriever
       
       // check again publication date, just to be sure
       DateTime publicationDate = table.getPublicationDate();
-      if (publicationDate.compareTo(params.getDateFrom()) >= 0 && publicationDate.compareTo(params.getDateTo()) <= 0)
-        tables.add(table);
+      if (publicationDate.compareTo(params.getStartDate()) >= 0 && publicationDate.compareTo(params.getEndDate()) <= 0)
+      {
+        synchronized (table)
+        {
+          tables.add(table);
+        }
+      }
     }
     catch (Exception ex)
     {

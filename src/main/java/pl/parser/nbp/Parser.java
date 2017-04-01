@@ -17,13 +17,19 @@ public class Parser
   public void handle() throws Exception
   {
     // retrieve remote data
-    List<ExchangeRatesTable> table = DataRetriever.getInstance().getResult();
+    List<ExchangeRatesTable> table = getTable();
     
     // and then calculate what we need
     CurrencyStatistics stats = CurrencyStatistics.calculate(table);
     
     // results are printed into some output print stream
     printHandler(stats);
+  }
+  
+  /** Gets table list. */
+  protected List<ExchangeRatesTable> getTable() throws Exception
+  {
+    return DataRetriever.getInstance().getResult();
   }
   
   /**

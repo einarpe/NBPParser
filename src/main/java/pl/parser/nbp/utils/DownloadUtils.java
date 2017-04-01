@@ -6,7 +6,7 @@ import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 
-public class DownloadUtils
+public final class DownloadUtils
 {
   /**
    * Simple method for synchronically downloading files.

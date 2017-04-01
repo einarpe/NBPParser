@@ -57,12 +57,12 @@ public class CurrencyStatistics
   {
     double[] buyRates = table
       .stream()
-      .map((ert) -> ert.getPosition().getBuyRate())
+      .map((ert) -> ert.getPosition().getBidRate())
       .mapToDouble(Double::doubleValue).toArray();
     
     double[] sellRates = table
         .stream()
-        .map((ert) -> ert.getPosition().getSellRate())
+        .map((ert) -> ert.getPosition().getAskRate())
         .mapToDouble(Double::doubleValue).toArray();
     
     double mean = StatUtils.mean(buyRates);

@@ -11,9 +11,9 @@ public class Parameters
 
   private String currencyCode;
   
-  private DateTime dateFrom;
+  private DateTime startDate;
   
-  private DateTime dateTo;
+  private DateTime endDate;
   
   /**
    * Gets currency code.
@@ -33,28 +33,28 @@ public class Parameters
    * Gets date from.
    * @return
    */
-  public DateTime getDateFrom()
+  public DateTime getStartDate()
   {
-    return dateFrom;
+    return startDate;
   }
 
-  private void setDateFrom(DateTime dateFrom)
+  private void setStartDate(DateTime dateFrom)
   {
-    this.dateFrom = dateFrom;
+    this.startDate = dateFrom;
   }
 
   /**
    * Gets date to.
    * @return
    */
-  public DateTime getDateTo()
+  public DateTime getEndDate()
   {
-    return dateTo;
+    return endDate;
   }
 
-  private void setDateTo(DateTime dateTo)
+  private void setEndDate(DateTime dateTo)
   {
-    this.dateTo = dateTo;
+    this.endDate = dateTo;
   }
   
   /**
@@ -72,20 +72,20 @@ public class Parameters
       throw new ParametersException("Currency code cannot be null or empty");
     
     if (args[1] == null)
-      throw new ParametersException("Date from cannot be null");
+      throw new ParametersException("Start date cannot be null");
     
     if (args[2] == null)
-      throw new ParametersException("Date to cannot be null");
+      throw new ParametersException("End date cannot be null");
       
     if (instance == null)
       instance = new Parameters();
     
     instance.setCurrencyCode(args[0]);
-    instance.setDateFrom(new DateTime(args[1]));
-    instance.setDateTo(new DateTime(args[2]));
+    instance.setStartDate(new DateTime(args[1]));
+    instance.setEndDate(new DateTime(args[2]));
     
-    if (instance.getDateFrom().compareTo(instance.getDateTo()) > 0)
-      throw new ParametersException("Date from must me less than or equal to date to.");
+    if (instance.getStartDate().compareTo(instance.getEndDate()) > 0)
+      throw new ParametersException("Start date must be less than or equal to end date.");
     
     return true;
   }

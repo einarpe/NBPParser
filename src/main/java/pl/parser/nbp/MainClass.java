@@ -11,8 +11,8 @@ public class MainClass
    * Main entry point.
    * @param args - arguments passed to program: <br>
    *  [0] - currency code <br>
-   *  [1] - date from <br>
-   *  [2] - date to <br>
+   *  [1] - start date<br>
+   *  [2] - end date <br>
    * 
    */
   public static void main(String[] args)
@@ -23,8 +23,8 @@ public class MainClass
       
       if (Parameters.init(args))
       {
-        Parser ci = new Parser();
-        ci.handle();
+        Parser parser = new Parser();
+        parser.handle();
       }
       else
       {
@@ -40,7 +40,7 @@ public class MainClass
   /**
    * Set default logger. <br>
    * Method sets default logging level of SEVERE.
-   * When there is VM argument in format -Dlog.level=... it sets level to value of that argument.
+   * When there is a VM argument in format -Dlog.level=... it sets level to value of that argument.
    */
   private static void setLogger()
   {

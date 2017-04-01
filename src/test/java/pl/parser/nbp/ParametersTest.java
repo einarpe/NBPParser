@@ -8,6 +8,7 @@ import org.junit.rules.ExpectedException;
 
 import pl.parser.nbp.utils.Parameters;
 import pl.parser.nbp.utils.Parameters.ParametersException;
+import static pl.parser.nbp.utils.TestUtils.arr;
 
 public class ParametersTest
 {
@@ -53,14 +54,8 @@ public class ParametersTest
     Assert.assertNotNull(params);
     
     Assert.assertEquals("USD", params.getCurrencyCode());
-    Assert.assertTrue(new DateTime("2013-12-31").equals(params.getDateFrom()));
-    Assert.assertTrue(new DateTime("2015-06-13").equals(params.getDateTo()));
+    Assert.assertTrue(new DateTime("2013-12-31").equals(params.getStartDate()));
+    Assert.assertTrue(new DateTime("2015-06-13").equals(params.getEndDate()));
     
-  }
-  
-  /** Like a pirate! */
-  private String[] arr(String ... strings)
-  {
-    return strings;
   }
 }

@@ -70,10 +70,10 @@ public class ExchangeRatesTable
       Element xmlPosition = (Element) xmlCurrencyCode.getParentNode();
       
       String posBuyRate =  (String) xpath.evaluate("kurs_kupna/text()", xmlPosition, XPathConstants.STRING);
-      position.setBuyRate(Double.parseDouble(posBuyRate.replace(',', '.')));
+      position.setBidRate(Double.parseDouble(posBuyRate.replace(',', '.')));
       
       String posSellRate = (String) xpath.evaluate("kurs_sprzedazy/text()", xmlPosition, XPathConstants.STRING);
-      position.setSellRate(Double.parseDouble(posSellRate.replace(',', '.')));
+      position.setAskRate(Double.parseDouble(posSellRate.replace(',', '.')));
       
       table.setPosition(position);
     }
