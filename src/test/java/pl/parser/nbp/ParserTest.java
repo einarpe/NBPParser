@@ -2,7 +2,6 @@ package pl.parser.nbp;
 
 import static pl.parser.nbp.utils.TestUtils.arr;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.junit.Assert;
@@ -10,7 +9,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import pl.parser.nbp.data.ExchangeRatesTable;
 import pl.parser.nbp.utils.Parameters;
 
 public class ParserTest
@@ -63,17 +61,6 @@ public class ParserTest
     public MockParser(Consumer<CurrencyStatistics> handler)
     {
       this.handler = handler;
-    }
-    
-    @Override
-    protected List<ExchangeRatesTable> getTable() throws Exception
-    {
-      List<ExchangeRatesTable> result = super.getTable();
-      
-      // wait a few seconds 
-      Thread.sleep(10 * 1000);
-      
-      return result;
     }
     
     @Override

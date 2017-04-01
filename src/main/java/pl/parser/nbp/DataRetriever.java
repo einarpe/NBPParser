@@ -3,9 +3,7 @@ package pl.parser.nbp;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +15,7 @@ import org.w3c.dom.Document;
 
 import pl.parser.nbp.data.ExchangeRatesTable;
 import pl.parser.nbp.utils.DownloadUtils;
+import pl.parser.nbp.utils.DownloadUtils.DownloadPool;
 import pl.parser.nbp.utils.Parameters;
 
 public class DataRetriever
@@ -27,16 +26,11 @@ public class DataRetriever
   /** Pattern to check for correct file and extracting date parts (year, month, and day). */
   private final static Pattern reXmlFileName = Pattern.compile("c[0-9]{3}z([0-9]{2})([0-9]{2})([0-9]{2})");
 
-  /** Specifies maximum waiting time to finish all downloads [minutes]. */
-  private final static long WAIT_TIMEOUT_MINUTES = 0;
-  
-  ReentrantLock lock = new ReentrantLock();
-
   /** List of tables containing data. */
   private List<ExchangeRatesTable> tables;
   
   private DataRetriever() 
-  { 
+  {
     this.tables = new CopyOnWriteArrayList<>();
   }
   
@@ -53,13 +47,14 @@ public class DataRetriever
     return retriever;
   }
   
-  /** Method to handle download data. */
-  private void downloadData() throws IOException, InterruptedException
+  /** Method to handle download data. 
+   * @throws ExecutionException */
+  private void downloadData() throws IOException, InterruptedException, ExecutionException
   {
     Parameters params = Parameters.getInstance();
     DateTime startDate = params.getStartDate();
     DateTime endDate = params.getEndDate();
-    ForkJoinPool fjp = new ForkJoinPool(8); 
+    DownloadPool pool = DownloadUtils.getPool();
     
     Logger.getGlobal().info("Starting download.");
     for (int year = startDate.getYear(), to = endDate.getYear(); year <= to; year++)
@@ -82,13 +77,12 @@ public class DataRetriever
         if (dateInFileName.compareTo(startDate) >= 0 && dateInFileName.compareTo(endDate) <= 0)
         {
           String dataFileUrl = String.format("http://www.nbp.pl/kursy/xml/%s.xml", line);
-          fjp.submit(() -> readDataFile(dataFileUrl));
+          pool.submit(() -> readDataFile(dataFileUrl));
         }
       }
     }
     
-    // wait...
-    fjp.awaitQuiescence(1, TimeUnit.MINUTES);
+    pool.waitFor();
     Logger.getGlobal().info("Downloading done.");
   }
   
@@ -100,8 +94,8 @@ public class DataRetriever
   {
     try
     {
-      Parameters params = Parameters.getInstance();
       Logger.getGlobal().info(String.format("Downloading file %s", url));
+      Parameters params = Parameters.getInstance();
       
       Document document = builderFactory.newDocumentBuilder().parse(url);
       ExchangeRatesTable table = ExchangeRatesTable.parse(document, params.getCurrencyCode());
@@ -109,12 +103,7 @@ public class DataRetriever
       // check again publication date, just to be sure
       DateTime publicationDate = table.getPublicationDate();
       if (publicationDate.compareTo(params.getStartDate()) >= 0 && publicationDate.compareTo(params.getEndDate()) <= 0)
-      {
-        synchronized (table)
-        {
-          tables.add(table);
-        }
-      }
+        tables.add(table);
     }
     catch (Exception ex)
     {
