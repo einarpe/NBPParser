@@ -55,6 +55,6 @@ public class MainClass
    */
   private static void printHelp()
   {
-    System.out.println("Usage: java pl.parser.nbp.MainClass [CURRENCY_CODE] [DATE_FROM:YYYY-MM-DD] [DATE_TO:YYYY-MM-DD]");
+    System.out.println("Usage: java -jar NBPParser.jar [CURRENCY_CODE] [DATE_FROM:YYYY-MM-DD] [DATE_TO:YYYY-MM-DD]");
   }  
 }

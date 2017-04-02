@@ -28,32 +28,37 @@ public class DataRetriever
 
   /** List of tables containing data. */
   private List<ExchangeRatesTable> tables;
+
+  /** Input parameters. */
+  private Parameters parameters;
   
-  private DataRetriever() 
+  private DataRetriever(Parameters parameters) 
   {
     this.tables = new CopyOnWriteArrayList<>();
+    this.parameters = parameters;
   }
   
   /**
    * Returns instance of DataRetriever class. <br>
    * Method starts downloading immediately and blocks current thread until all data is downloaded.
+   * @param params 
    * @return object of DataRetriever class with downloaded and parsed data
    * @throws Exception - error during download
    */
-  public static DataRetriever getInstance() throws Exception
+  public static DataRetriever getInstance(Parameters parameters) throws Exception
   {
-    DataRetriever retriever = new DataRetriever();
+    DataRetriever retriever = new DataRetriever(parameters);
     retriever.downloadData();
     return retriever;
   }
   
   /** Method to handle download data. 
+   * @param params 
    * @throws ExecutionException */
   private void downloadData() throws IOException, InterruptedException, ExecutionException
   {
-    Parameters params = Parameters.getInstance();
-    DateTime startDate = params.getStartDate();
-    DateTime endDate = params.getEndDate();
+    DateTime startDate = parameters.getStartDate();
+    DateTime endDate = parameters.getEndDate();
     DownloadPool pool = DownloadUtils.getPool();
     
     Logger.getGlobal().info("Starting download.");
@@ -95,14 +100,13 @@ public class DataRetriever
     try
     {
       Logger.getGlobal().info(String.format("Downloading file %s", url));
-      Parameters params = Parameters.getInstance();
       
       Document document = builderFactory.newDocumentBuilder().parse(url);
-      ExchangeRatesTable table = ExchangeRatesTable.parse(document, params.getCurrencyCode());
+      ExchangeRatesTable table = ExchangeRatesTable.parse(document, parameters.getCurrencyCode());
       
       // check again publication date, just to be sure
       DateTime publicationDate = table.getPublicationDate();
-      if (publicationDate.compareTo(params.getStartDate()) >= 0 && publicationDate.compareTo(params.getEndDate()) <= 0)
+      if (publicationDate.compareTo(parameters.getStartDate()) >= 0 && publicationDate.compareTo(parameters.getEndDate()) <= 0)
         tables.add(table);
     }
     catch (Exception ex)

@@ -12,9 +12,11 @@ public class Parser
 {
   private PrintStream out;
   
+  private Parameters parameters;
+  
   public Parser(String[] args) throws ParametersException
   {
-    Parameters.init(args);
+    parameters = Parameters.init(args);
   }
   
   /**
@@ -37,7 +39,7 @@ public class Parser
   /** Gets table list. */
   protected List<ExchangeRatesTable> getTable() throws Exception
   {
-    return DataRetriever.getInstance().getResult();
+    return DataRetriever.getInstance(parameters).getResult();
   }
   
   /**
@@ -47,9 +49,8 @@ public class Parser
   protected void printHandler(CurrencyStatistics stats)
   {
     NumberFormat formatter = getNumberFormatter();
-    Parameters params = Parameters.getInstance();
     
-    println(params.getCurrencyCode());
+    println(parameters.getCurrencyCode());
     println(formatter.format(stats.getAverage()));
     println(formatter.format(stats.getStdDeviation()));
   }

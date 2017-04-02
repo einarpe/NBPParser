@@ -18,39 +18,28 @@ public class ParametersTest
   @Test
   public void test1Init() throws Exception
   {
-    Assert.assertFalse(Parameters.init(null));
-    Assert.assertFalse(Parameters.init(arr()));
-    Assert.assertFalse(Parameters.init(arr("1")));
-    Assert.assertFalse(Parameters.init(arr("1", "2")));
-    Assert.assertFalse(Parameters.init(arr("1", "2", "3", "4")));
+    exception.expect(ParametersException.class);
+    Parameters.init(arr("", "2", "3"));
   }
   
   @Test
   public void test2Init() throws Exception
   {
     exception.expect(ParametersException.class);
-    Parameters.init(arr("", "2", "3"));
+    Parameters.init(arr("EUR", null, null));
   }
   
   @Test
   public void test3Init() throws Exception
   {
     exception.expect(ParametersException.class);
-    Parameters.init(arr("EUR", null, null));
+    Parameters.init(arr("EUR", "2018-01-01", "2017-01-01"));
   }
   
   @Test
   public void test4Init() throws Exception
   {
-    exception.expect(ParametersException.class);
-    Parameters.init(arr("EUR", "2018-01-01", "2017-01-01"));
-  }
-  
-  @Test
-  public void test5Init() throws Exception
-  {
-    Assert.assertTrue(Parameters.init(arr("USD", "2013-12-31", "2015-06-13")));
-    Parameters params = Parameters.getInstance();
+    Parameters params = Parameters.init(arr("USD", "2013-12-31", "2015-06-13"));
     Assert.assertNotNull(params);
     
     Assert.assertEquals("USD", params.getCurrencyCode());

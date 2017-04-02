@@ -3,12 +3,10 @@ package pl.parser.nbp.utils;
 import org.joda.time.DateTime;
 
 /**
- * Global class for parsing & holding input parameters
+ * Utility class for parsing & holding input parameters
  */
 public class Parameters
 {
-  private static Parameters instance;
-
   private String currencyCode;
   
   private DateTime startDate;
@@ -65,13 +63,13 @@ public class Parameters
    * @return true - all arguments are correct / false - otherwise
    * @throws ParametersException - when there is error reading input parameters
    */
-  public static boolean init(String[] args) throws ParametersException
+  public static Parameters init(String[] args) throws ParametersException
   {
     /*
      * Perform some validation beforehand.
      */
     if (args == null || args.length != 3)
-      return false;
+      throw new ParametersException("Incorrect count of arguments");
     
     if (args[0] == null || args[0].trim().isEmpty())
       throw new ParametersException("Currency code cannot be null or empty");
@@ -83,7 +81,7 @@ public class Parameters
       throw new ParametersException("End date cannot be null");
     
     // always create new instance of class when initializing
-    instance = new Parameters();
+    Parameters instance = new Parameters();
     instance.setCurrencyCode(args[0]);
     instance.setStartDate(new DateTime(args[1]));
     instance.setEndDate(new DateTime(args[2]));
@@ -92,15 +90,6 @@ public class Parameters
     if (instance.getStartDate().compareTo(instance.getEndDate()) > 0)
       throw new ParametersException("Start date must be less than or equal to end date.");
     
-    return true;
-  }
-  
-  /**
-   * Returns current instance.
-   * @return
-   */
-  public static Parameters getInstance()
-  {
     return instance;
   }
   
